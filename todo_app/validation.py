@@ -25,9 +25,11 @@ _LINE_CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]")
 # Multi-line text: newlines and tabs are fine, other control characters are not.
 _TEXT_CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 # Bidirectional overrides/isolates can make a title display as different text.
-_BIDI_RE = re.compile(r"[‪-‮⁦-⁩]")
+_BIDI_RE = re.compile(r"[\u202a-\u202e\u2066-\u2069]")
 # Characters that render as nothing: a title made only of these looks empty.
 _INVISIBLE_CATEGORIES = {"Cc", "Cf", "Zs", "Zl", "Zp"}
+# Letters/symbols that are drawn as blank space (Hangul fillers, Braille blank).
+_BLANK_CHARS = frozenset("\u115f\u1160\u3164\uffa0\u2800")
 
 
 class ValidationError(ValueError):
@@ -79,9 +81,9 @@ def clean_title(value: Any) -> str:
     if not is_encodable(value):
         raise ValidationError("タイトルに使えない文字が含まれています")
     title = value.strip()
-    if all(unicodedata.category(ch) in _INVISIBLE_CATEGORIES for ch in title):
+    if all(ch in _BLANK_CHARS or unicodedata.category(ch) in _INVISIBLE_CATEGORIES for ch in title):
         raise ValidationError("タイトルを入力してください")
-    if _LINE_CONTROL_RE.search(title) or " " in title or " " in title:
+    if _LINE_CONTROL_RE.search(title) or "\u2028" in title or "\u2029" in title:
         raise ValidationError("タイトルに改行や制御文字は使えません")
     if _BIDI_RE.search(title):
         raise ValidationError("タイトルに文字の向きを変える制御文字は使えません")
@@ -95,7 +97,7 @@ def _clean_text(value: Any, label: str, limit: int) -> str:
         raise ValidationError(f"{label}は文字列で指定してください")
     if not is_encodable(value):
         raise ValidationError(f"{label}に使えない文字が含まれています")
-    text = value.replace("\r\n", "\n").replace("\r", "\n").replace(" ", "\n").replace(" ", "\n")
+    text = value.replace("\r\n", "\n").replace("\r", "\n").replace("\u2028", "\n").replace("\u2029", "\n")
     if _TEXT_CONTROL_RE.search(text):
         raise ValidationError(f"{label}に制御文字は使えません")
     if len(text) > limit:

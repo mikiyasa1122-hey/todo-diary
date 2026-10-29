@@ -278,7 +278,7 @@ class RobustnessTests(ApiTestCase):
     def test_random_inputs_never_cause_server_errors(self):
         rng = random.Random(20261029)
         values = [None, True, False, 0, -1, 1.5, 10**30, "", " ", "2026-10-29", "2026-02-30", "x" * 300,
-                  "<b>", "\x00", "日本語", "\ud800", "a\udfffb", "​", "‮", [], {}, ["2026-10-29"], {"a": 1}]
+                  "<b>", "\x00", "日本語", "\ud800", "a\udfffb", "\u200b", "\u202e", [], {}, ["2026-10-29"], {"a": 1}]
         fields = ["title", "due_date", "notes", "done", "content", "id", "", "\ud800"]
         paths = ["/api/tasks", "/api/tasks/1", "/api/tasks/overdue", "/api/journal/2026-10-29",
                  "/api/journal/2026-10-30", "/api/calendar?month=2026-10", "/api/tasks/%2e%2e",

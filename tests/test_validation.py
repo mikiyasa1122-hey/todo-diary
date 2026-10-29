@@ -64,7 +64,7 @@ class TitleTests(unittest.TestCase):
         self.assertEqual(v.clean_title("<script>alert(1)</script>"), "<script>alert(1)</script>")
 
     def test_rejects(self):
-        for bad in ["", "   ", "　" * 3, "a" * (v.TITLE_MAX + 1), "line\nbreak", "tab\tchar",
+        for bad in ["", "   ", "\u3000" * 3, "a" * (v.TITLE_MAX + 1), "line\nbreak", "tab\tchar",
                     "nul\x00", None, 1, ["x"]]:
             with self.subTest(bad=bad), self.assertRaises(v.ValidationError):
                 v.clean_title(bad)
@@ -72,18 +72,19 @@ class TitleTests(unittest.TestCase):
 
 class UnicodeEdgeTests(unittest.TestCase):
     def test_invisible_only_titles_are_empty(self):
-        for bad in ["​", "​‍", "﻿", " 　​ ", "⁠"]:
+        for bad in ["\u200b", "\u200b\u200d", "\ufeff", " \u3000\u200b ", "\u2060",
+                    "\u3164", "\u2800\u2800", "\uffa0", "\u115f\u1160"]:
             with self.subTest(bad=repr(bad)), self.assertRaises(v.ValidationError):
                 v.clean_title(bad)
 
     def test_line_separators_and_bidi_rejected_in_title(self):
-        for bad in ["a b", "a b", "abc‮def", "x⁦y"]:
+        for bad in ["a\u2028b", "a\u2029b", "abc\u202edef", "x\u2066y"]:
             with self.subTest(bad=repr(bad)), self.assertRaises(v.ValidationError):
                 v.clean_title(bad)
 
     def test_visible_unicode_titles_allowed(self):
-        family = "\U0001f468‍\U0001f469‍\U0001f467"  # emoji joined with ZWJ
-        for ok in [family, "café", "日本語のタスク", "a​b"]:
+        family = "\U0001f468\u200d\U0001f469\u200d\U0001f467"  # emoji joined with ZWJ
+        for ok in [family, "café", "日本語のタスク", "a\u200bb"]:
             with self.subTest(ok=ok):
                 self.assertEqual(v.clean_title(ok), ok)
 
@@ -100,7 +101,7 @@ class UnicodeEdgeTests(unittest.TestCase):
         self.assertTrue(v.is_encodable("\U0001f600"))
 
     def test_line_separators_become_newlines_in_text(self):
-        self.assertEqual(v.clean_journal("a b c"), "a\nb\nc")
+        self.assertEqual(v.clean_journal("a\u2028b\u2029c"), "a\nb\nc")
 
 
 class TextTests(unittest.TestCase):
