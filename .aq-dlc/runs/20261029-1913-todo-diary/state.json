@@ -236,139 +236,139 @@
   "memory_done": true,
   "fix_iterations": 2,
   "gate": {
-    "ran_at": "2026-10-29T19:41:22+09:00",
-    "finished_epoch": 1793270482.814072,
-    "stamp": "20261029-194036",
+    "ran_at": "2026-10-29T19:57:48+09:00",
+    "finished_epoch": 1793271468.0111392,
+    "stamp": "20261029-195658",
     "checks_pass": true,
     "results": {
       "checks": {
         "lint": {
           "pass": true,
           "exit": 0,
-          "sec": 0.15,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-check-lint.log"
+          "sec": 0.14,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-check-lint.log"
         },
         "typecheck": {
           "pass": true,
           "exit": 0,
-          "sec": 0.42,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-check-typecheck.log"
+          "sec": 0.39,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-check-typecheck.log"
         },
         "test": {
           "pass": true,
           "exit": 0,
-          "sec": 18.0,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-check-test.log"
+          "sec": 20.85,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-check-test.log"
         }
       },
       "verifications": {
         "V1": {
           "pass": true,
           "exit": 0,
-          "sec": 0.6,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V1.log"
+          "sec": 1.31,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V1.log"
         },
         "V2": {
           "pass": true,
           "exit": 0,
-          "sec": 2.99,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V2.log"
+          "sec": 3.21,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V2.log"
         },
         "V3": {
           "pass": true,
           "exit": 0,
-          "sec": 2.41,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V3.log"
+          "sec": 2.37,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V3.log"
         },
         "V17": {
           "pass": true,
           "exit": 0,
-          "sec": 0.22,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V17.log"
+          "sec": 0.21,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V17.log"
         },
         "V4": {
           "pass": true,
           "exit": 0,
-          "sec": 0.43,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V4.log"
+          "sec": 0.42,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V4.log"
         },
         "V5": {
           "pass": true,
           "exit": 0,
-          "sec": 2.45,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V5.log"
+          "sec": 2.44,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V5.log"
         },
         "V6": {
           "pass": true,
           "exit": 0,
           "sec": 0.29,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V6.log"
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V6.log"
         },
         "V18": {
           "pass": true,
           "exit": 0,
           "sec": 0.35,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V18.log"
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V18.log"
         },
         "V7": {
           "pass": true,
           "exit": 0,
-          "sec": 0.4,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V7.log"
+          "sec": 0.41,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V7.log"
         },
         "V8": {
           "pass": true,
           "exit": 0,
-          "sec": 2.43,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V8.log"
+          "sec": 2.45,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V8.log"
         },
         "V9": {
           "pass": true,
           "exit": 0,
-          "sec": 0.21,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V9.log"
+          "sec": 0.22,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V9.log"
         },
         "V10": {
           "pass": true,
           "exit": 0,
-          "sec": 4.51,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V10.log"
+          "sec": 4.48,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V10.log"
         },
         "V15": {
           "pass": true,
           "exit": 0,
-          "sec": 4.43,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V15.log"
+          "sec": 4.47,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V15.log"
         },
         "V16": {
           "pass": true,
           "exit": 0,
-          "sec": 0.87,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V16.log"
+          "sec": 0.84,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V16.log"
         },
         "V11": {
           "pass": true,
           "exit": 0,
-          "sec": 0.38,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V11.log"
+          "sec": 0.36,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V11.log"
         },
         "V12": {
           "pass": true,
           "exit": 0,
-          "sec": 2.95,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V12.log"
+          "sec": 2.97,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V12.log"
         },
         "V13": {
           "pass": true,
           "exit": 0,
           "sec": 0.29,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V13.log"
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V13.log"
         },
         "V14": {
           "pass": true,
           "exit": 0,
-          "sec": 1.36,
-          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-194036-verify-V14.log"
+          "sec": 1.38,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V14.log"
         }
       }
     }
