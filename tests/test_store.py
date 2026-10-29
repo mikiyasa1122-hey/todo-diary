@@ -3,6 +3,7 @@ import threading
 import unittest
 from datetime import date
 from pathlib import Path
+from unittest import mock
 
 from todo_app.store import CALENDAR_CELLS, Store
 
@@ -73,7 +74,20 @@ class TaskStoreTests(StoreTestCase):
         self.store.update_task(finished["id"], {"done": True})
         self.store.create_task("today", today)
         self.store.create_task("future", date(2026, 11, 1))
-        self.assertEqual([t["id"] for t in self.store.list_overdue(today)], [old["id"]])
+        tasks, truncated = self.store.list_overdue(today)
+        self.assertEqual([t["id"] for t in tasks], [old["id"]])
+        self.assertFalse(truncated)
+
+    def test_overdue_reports_truncation(self):
+        with mock.patch("todo_app.store.OVERDUE_LIMIT", 3):
+            for i in range(3):
+                self.store.create_task(f"t{i}", date(2026, 10, 1 + i))
+            tasks, truncated = self.store.list_overdue(date(2026, 10, 29))
+            self.assertEqual((len(tasks), truncated), (3, False))
+            self.store.create_task("t3", date(2026, 10, 10))
+            tasks, truncated = self.store.list_overdue(date(2026, 10, 29))
+            self.assertEqual((len(tasks), truncated), (3, True))
+            self.assertEqual([t["title"] for t in tasks], ["t0", "t1", "t2"])  # oldest first
 
     def test_sql_metacharacters_are_data(self):
         title = "'); DROP TABLE tasks; --"

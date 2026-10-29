@@ -181,6 +181,9 @@
         onclick: () => selectDate(task.due_date),
       }),
     ])));
+    if (data.truncated) {
+      els.overdueList.append(el("li", { class: "empty", text: `ほかにもあります（古い順に${data.tasks.length}件を表示）` }));
+    }
     els.overdueSection.hidden = data.tasks.length === 0;
   }
 
@@ -191,6 +194,11 @@
 
   function selectDate(date) {
     if (date === state.selected) return;
+    const year = parseYmd(date).y;
+    if (year < 1900 || year > 2999) {
+      showMessage("1900〜2999年の日付だけ扱えます");
+      return;
+    }
     if (journalDirty() && !confirm("保存していない日誌があります。破棄して移動しますか？")) return;
     state.selected = date;
     const { y, m } = parseYmd(date);
@@ -225,7 +233,11 @@
   }
 
   function renderTasks(tasks) {
-    els.taskList.replaceChildren(...tasks.map(taskItem));
+    // Keep open edit forms, so a refresh caused by another task does not discard typing.
+    const editing = new Map(
+      [...els.taskList.querySelectorAll("li[data-editing]")].map((li) => [li.dataset.editing, li]),
+    );
+    els.taskList.replaceChildren(...tasks.map((task) => editing.get(String(task.id)) || taskItem(task)));
     els.taskEmpty.hidden = tasks.length > 0;
   }
 
@@ -275,7 +287,12 @@
     const notesInput = el("textarea", { rows: 2, maxLength: 2000, placeholder: "メモ（任意）", "aria-label": "メモ" });
     notesInput.value = task.notes;
     const saveBtn = el("button", { type: "submit", class: "small", text: "保存" });
-    const cancelBtn = el("button", { type: "button", class: "secondary small", text: "取消", onclick: () => guarded(null, reloadTasks) });
+    const cancelBtn = el("button", { type: "button", class: "secondary small", text: "取消",
+      onclick: () => {
+        delete li.dataset.editing;
+        guarded(null, reloadTasks);
+      },
+    });
 
     const form = el("form", {
       class: "edit-form",
@@ -289,12 +306,14 @@
             due_date: dateInput.value,
             notes: notesInput.value,
           });
+          delete li.dataset.editing;
           await refreshAfterChange();
           showMessage("更新しました", false);
         });
       },
     }, [titleInput, dateInput, notesInput, el("div", { class: "row" }, [saveBtn, cancelBtn])]);
 
+    li.dataset.editing = String(task.id);
     li.replaceChildren(form);
     titleInput.focus();
   }

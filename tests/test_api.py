@@ -45,7 +45,7 @@ class ApiTestCase(unittest.TestCase):
             res = conn.getresponse()
             payload = res.read()
             ctype = res.getheader("Content-Type", "")
-            if ctype.startswith("application/json"):
+            if ctype.startswith("application/json") and payload:
                 payload = json.loads(payload)
             return res.status, payload, res
         finally:
@@ -245,11 +245,41 @@ class RobustnessTests(ApiTestCase):
         self.assertEqual(self.request("DELETE", "/api/today")[0], 405)
         self.assertEqual(self.request("POST", "/", {"x": 1})[0], 404)
 
+    def test_lone_surrogates_return_400(self):
+        # JSON allows \ud800 escapes, but such strings cannot be stored as UTF-8.
+        task = self.create("元のタイトル")
+        cases = [
+            ("POST", "/api/tasks", rb'{"title": "\ud800", "due_date": "2026-10-29"}'),
+            ("POST", "/api/tasks", rb'{"title": "ok", "due_date": "2026-10-29", "notes": "\udfff"}'),
+            ("POST", "/api/tasks", rb'{"\ud800": 1, "title": "ok", "due_date": "2026-10-29"}'),
+            ("PATCH", f"/api/tasks/{task['id']}", rb'{"title": "\ud800"}'),
+            ("PATCH", f"/api/tasks/{task['id']}", rb'{"\udfff": true}'),
+            ("PUT", "/api/journal/2026-10-29", rb'{"content": "\ud83d"}'),
+            ("PUT", "/api/journal/2026-10-29", rb'{"\ud83d": "x"}'),
+        ]
+        for method, path, raw in cases:
+            with self.subTest(method=method, raw=raw):
+                status, data, _ = self.request(method, path, raw=raw)
+                self.assertEqual(status, 400, data)
+                self.assertIn("error", data)
+        self.assertEqual(self.store.get_task(task["id"]), task)
+        self.assertEqual(len(self.store.list_tasks(date(2026, 10, 29), date(2026, 10, 29))), 1)
+        self.assertIsNone(self.store.get_journal(date(2026, 10, 29)))
+
+    def test_head_and_options_are_405_json(self):
+        for method, path in [("OPTIONS", "/api/tasks"), ("OPTIONS", "/"), ("HEAD", "/"), ("HEAD", "/api/today")]:
+            with self.subTest(method=method, path=path):
+                status, data, res = self.request(method, path)
+                self.assertEqual(status, 405)
+                self.assertIsNone(res.getheader("Access-Control-Allow-Origin"))
+                if method == "OPTIONS":
+                    self.assertIn("error", data)
+
     def test_random_inputs_never_cause_server_errors(self):
         rng = random.Random(20261029)
         values = [None, True, False, 0, -1, 1.5, 10**30, "", " ", "2026-10-29", "2026-02-30", "x" * 300,
-                  "<b>", "\x00", "日本語", [], {}, ["2026-10-29"], {"a": 1}]
-        fields = ["title", "due_date", "notes", "done", "content", "id", ""]
+                  "<b>", "\x00", "日本語", "\ud800", "a\udfffb", "​", "‮", [], {}, ["2026-10-29"], {"a": 1}]
+        fields = ["title", "due_date", "notes", "done", "content", "id", "", "\ud800"]
         paths = ["/api/tasks", "/api/tasks/1", "/api/tasks/overdue", "/api/journal/2026-10-29",
                  "/api/journal/2026-10-30", "/api/calendar?month=2026-10", "/api/tasks/%2e%2e",
                  "/api/journal/..%2f..%2f", "/api/tasks?from=2026-10-01&to=2026-10-31"]

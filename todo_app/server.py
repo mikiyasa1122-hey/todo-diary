@@ -127,7 +127,8 @@ class App:
 
     def list_overdue(self, match: re.Match[str], query: Query, body: Payload) -> tuple[HTTPStatus, Payload]:
         today = self.today()
-        return HTTPStatus.OK, {"today": today.isoformat(), "tasks": self.store.list_overdue(today)}
+        tasks, truncated = self.store.list_overdue(today)
+        return HTTPStatus.OK, {"today": today.isoformat(), "tasks": tasks, "truncated": truncated}
 
     def create_task(self, match: re.Match[str], query: Query, body: Payload) -> tuple[HTTPStatus, Payload]:
         self._only(body, {"title", "due_date", "notes"}, {"title", "due_date"})
@@ -191,6 +192,7 @@ class App:
 
 class RequestHandler(BaseHTTPRequestHandler):
     app: App  # set by make_server
+    _send_body = True
     server_version = "TodoDiary/1.0"
     sys_version = ""
 
@@ -209,13 +211,24 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_DELETE(self) -> None:
         self._dispatch("DELETE")
 
+    # Without these, the base class answers 501 with an HTML page.
+    def do_HEAD(self) -> None:
+        self._dispatch("HEAD")
+
+    def do_OPTIONS(self) -> None:
+        self._dispatch("OPTIONS")
+
     def log_message(self, format: str, *args: Any) -> None:
         log.info("%s - %s", self.address_string(), format % args)
 
     # -------------------------------------------------------------------
     def _dispatch(self, method: str) -> None:
+        self._send_body = method != "HEAD"
         try:
             self._check_host()
+            if method in ("HEAD", "OPTIONS"):
+                # No CORS: preflights are never approved.
+                raise ApiError(HTTPStatus.METHOD_NOT_ALLOWED, "このメソッドは使えません")
             url = urlsplit(self.path)
             if method == "GET" and url.path in STATIC_FILES:
                 self._send_static(url.path)
@@ -298,6 +311,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             raise ApiError(HTTPStatus.BAD_REQUEST, "JSON が不正です") from None
         if not isinstance(data, dict):
             raise ApiError(HTTPStatus.BAD_REQUEST, "JSON はオブジェクトで送ってください")
+        if any(not v.is_encodable(key) for key in data):
+            raise ApiError(HTTPStatus.BAD_REQUEST, "項目名に使えない文字が含まれています")
         return data
 
     def _send_static(self, path: str) -> None:
@@ -312,14 +327,16 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def _send_json(self, status: HTTPStatus, payload: Payload) -> None:
-        data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        # backslashreplace: an error response must never fail to encode.
+        data = json.dumps(payload, ensure_ascii=False).encode("utf-8", "backslashreplace")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         self._security_headers()
         self.end_headers()
-        self.wfile.write(data)
+        if self._send_body:
+            self.wfile.write(data)
 
     def _security_headers(self) -> None:
         for name, value in SECURITY_HEADERS.items():

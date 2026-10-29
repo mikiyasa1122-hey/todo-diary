@@ -97,14 +97,15 @@ class Store:
             ).fetchall()
         return [_task(r) for r in rows]
 
-    def list_overdue(self, today: date) -> list[dict[str, Any]]:
+    def list_overdue(self, today: date) -> tuple[list[dict[str, Any]], bool]:
+        """Open tasks due before today, oldest first, and whether the list was cut at OVERDUE_LIMIT."""
         with self._conn() as conn:
             rows = conn.execute(
                 "SELECT * FROM tasks WHERE done = 0 AND due_date < ?"
                 " ORDER BY due_date, id LIMIT ?",
-                (today.isoformat(), OVERDUE_LIMIT),
+                (today.isoformat(), OVERDUE_LIMIT + 1),
             ).fetchall()
-        return [_task(r) for r in rows]
+        return [_task(r) for r in rows[:OVERDUE_LIMIT]], len(rows) > OVERDUE_LIMIT
 
     def update_task(self, task_id: int, changes: dict[str, Any]) -> dict[str, Any] | None:
         """Apply already-validated changes. Returns None when the task does not exist."""

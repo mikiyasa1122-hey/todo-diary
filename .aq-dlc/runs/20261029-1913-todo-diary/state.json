@@ -2,7 +2,7 @@
   "run_id": "20261029-1913-todo-diary",
   "title": "todo-diary",
   "status": "in_progress",
-  "phase": "02_failure_first",
+  "phase": "05_fix_loop",
   "created": "2026-10-29T19:13:23+09:00",
   "awaiting_human": false,
   "question": "",
@@ -39,6 +39,17 @@
               "command": ".venv\\Scripts\\python.exe -m unittest tests.test_store.ConcurrencyTests -v"
             }
           ]
+        },
+        {
+          "id": "K13",
+          "text": "見えない文字だけのタイトル、行区切り・双方向制御文字の混入（レビューN1）",
+          "verifications": [
+            {
+              "id": "V17",
+              "method": "ゼロ幅文字のみ・U+2028・bidi制御の拒否、ZWJ絵文字は許可",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_validation.UnicodeEdgeTests -v"
+            }
+          ]
         }
       ]
     },
@@ -71,6 +82,17 @@
               "id": "V6",
               "method": "index.html と app.js の静的整合チェック（参照IDの存在、外部読込なし）",
               "command": ".venv\\Scripts\\python.exe -m unittest tests.test_frontend -v"
+            }
+          ]
+        },
+        {
+          "id": "K14",
+          "text": "期限切れ一覧が上限で黙って打ち切られる（レビューN6）",
+          "verifications": [
+            {
+              "id": "V18",
+              "method": "上限超過で truncated=true、古い順",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_store.TaskStoreTests.test_overdue_reports_truncation -v"
             }
           ]
         }
@@ -123,6 +145,28 @@
               "id": "V10",
               "method": "不正リクエストとランダム入力のファズテスト（全応答が500未満）",
               "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.RobustnessTests -v"
+            }
+          ]
+        },
+        {
+          "id": "K11",
+          "text": "UTF-8で表せない文字列（lone surrogate）が値や項目名に入り、DB書き込みやエラー応答の生成で500／切断になる（独立レビューB1）",
+          "verifications": [
+            {
+              "id": "V15",
+              "method": "サロゲートを含む title/notes/content/項目名で400とDB不変を確認、ファズ値にも追加",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.RobustnessTests tests.test_validation.UnicodeEdgeTests -v"
+            }
+          ]
+        },
+        {
+          "id": "K12",
+          "text": "OPTIONS/HEADなど未実装メソッドが501（5xx）とHTMLを返す（レビューN2）",
+          "verifications": [
+            {
+              "id": "V16",
+              "method": "HEAD/OPTIONSが405でCORS許可ヘッダーなし",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.RobustnessTests.test_head_and_options_are_405_json -v"
             }
           ]
         }
@@ -187,7 +231,120 @@
     "summary": ""
   },
   "memory_done": false,
-  "fix_iterations": 0,
-  "gate": null,
-  "stop_blocks": 0
+  "fix_iterations": 1,
+  "gate": {
+    "ran_at": "2026-10-29T19:25:27+09:00",
+    "finished_epoch": 1793269527.5423734,
+    "stamp": "20261029-192450",
+    "checks_pass": true,
+    "results": {
+      "checks": {
+        "lint": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.16,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-check-lint.log"
+        },
+        "typecheck": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.41,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-check-typecheck.log"
+        },
+        "test": {
+          "pass": true,
+          "exit": 0,
+          "sec": 16.55,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-check-test.log"
+        }
+      },
+      "verifications": {
+        "V1": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.44,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V1.log"
+        },
+        "V2": {
+          "pass": true,
+          "exit": 0,
+          "sec": 2.97,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V2.log"
+        },
+        "V3": {
+          "pass": true,
+          "exit": 0,
+          "sec": 2.2,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V3.log"
+        },
+        "V4": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.34,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V4.log"
+        },
+        "V5": {
+          "pass": true,
+          "exit": 0,
+          "sec": 2.46,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V5.log"
+        },
+        "V6": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.28,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V6.log"
+        },
+        "V7": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.31,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V7.log"
+        },
+        "V8": {
+          "pass": true,
+          "exit": 0,
+          "sec": 2.48,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V8.log"
+        },
+        "V9": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.21,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V9.log"
+        },
+        "V10": {
+          "pass": true,
+          "exit": 0,
+          "sec": 3.42,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V10.log"
+        },
+        "V11": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.26,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V11.log"
+        },
+        "V12": {
+          "pass": true,
+          "exit": 0,
+          "sec": 2.92,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V12.log"
+        },
+        "V13": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.28,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V13.log"
+        },
+        "V14": {
+          "pass": true,
+          "exit": 0,
+          "sec": 1.35,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-192450-verify-V14.log"
+        }
+      }
+    }
+  },
+  "stop_blocks": 3
 }

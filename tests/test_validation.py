@@ -70,6 +70,39 @@ class TitleTests(unittest.TestCase):
                 v.clean_title(bad)
 
 
+class UnicodeEdgeTests(unittest.TestCase):
+    def test_invisible_only_titles_are_empty(self):
+        for bad in ["​", "​‍", "﻿", " 　​ ", "⁠"]:
+            with self.subTest(bad=repr(bad)), self.assertRaises(v.ValidationError):
+                v.clean_title(bad)
+
+    def test_line_separators_and_bidi_rejected_in_title(self):
+        for bad in ["a b", "a b", "abc‮def", "x⁦y"]:
+            with self.subTest(bad=repr(bad)), self.assertRaises(v.ValidationError):
+                v.clean_title(bad)
+
+    def test_visible_unicode_titles_allowed(self):
+        family = "\U0001f468‍\U0001f469‍\U0001f467"  # emoji joined with ZWJ
+        for ok in [family, "café", "日本語のタスク", "a​b"]:
+            with self.subTest(ok=ok):
+                self.assertEqual(v.clean_title(ok), ok)
+
+    def test_lone_surrogates_rejected(self):
+        for bad in ["\ud800", "ok\udfff", "\ud83d"]:
+            with self.subTest(bad=repr(bad)):
+                self.assertFalse(v.is_encodable(bad))
+                with self.assertRaises(v.ValidationError):
+                    v.clean_title(bad)
+                with self.assertRaises(v.ValidationError):
+                    v.clean_notes(bad)
+                with self.assertRaises(v.ValidationError):
+                    v.clean_journal(bad)
+        self.assertTrue(v.is_encodable("\U0001f600"))
+
+    def test_line_separators_become_newlines_in_text(self):
+        self.assertEqual(v.clean_journal("a b c"), "a\nb\nc")
+
+
 class TextTests(unittest.TestCase):
     def test_notes(self):
         self.assertEqual(v.clean_notes("  1行目\r\n2行目  "), "1行目\n2行目")
