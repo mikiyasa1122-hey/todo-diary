@@ -1,4 +1,8 @@
 {
   "_note": "プロジェクト固有の設定。checks は技術スタックを決めたときに登録する。全体設定（~/.aq-dlc/config.json）の値はここで上書きできる。",
-  "checks": []
+  "checks": [
+    { "name": "lint",      "command": ".venv\Scripts\python.exe -m ruff check .",          "timeout_sec": 300 },
+    { "name": "typecheck", "command": ".venv\Scripts\python.exe -m mypy",                  "timeout_sec": 300 },
+    { "name": "test",      "command": ".venv\Scripts\python.exe -m unittest discover -s tests -t . -v", "timeout_sec": 600 }
+  ]
 }

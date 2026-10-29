@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>カレンダーTODO</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>カレンダーTODO</h1>
+    <nav class="month-nav" aria-label="月の移動">
+      <button type="button" id="prev-month" aria-label="前の月">‹</button>
+      <h2 id="month-label" aria-live="polite">…</h2>
+      <button type="button" id="next-month" aria-label="次の月">›</button>
+      <button type="button" id="today-btn" class="secondary">今日</button>
+    </nav>
+  </header>
+
+  <div id="message" class="message" role="status" hidden></div>
+
+  <main class="layout">
+    <section class="calendar" aria-label="カレンダー">
+      <div class="weekdays" aria-hidden="true">
+        <span class="sun">日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span class="sat">土</span>
+      </div>
+      <div id="calendar-grid" class="grid"></div>
+      <p class="legend">
+        <span class="badge open">未</span> 未完了
+        <span class="badge done">済</span> 完了
+        <span class="badge journal">誌</span> 日誌あり
+        <span class="badge late">!</span> 期限切れ
+      </p>
+
+      <section id="overdue-section" class="overdue" hidden>
+        <h3>期限切れのタスク</h3>
+        <ul id="overdue-list"></ul>
+      </section>
+    </section>
+
+    <aside class="day-panel" aria-labelledby="selected-label">
+      <h2 id="selected-label">…</h2>
+
+      <section class="tasks">
+        <h3>タスク</h3>
+        <form id="task-form" class="task-form" autocomplete="off">
+          <input id="task-title" type="text" maxlength="200" placeholder="やること（Enterで追加）" aria-label="新しいタスク" required>
+          <button type="submit" id="task-add">追加</button>
+        </form>
+        <ul id="task-list" class="task-list"></ul>
+        <p id="task-empty" class="empty">この日のタスクはありません</p>
+      </section>
+
+      <section class="journal">
+        <h3>日誌</h3>
+        <textarea id="journal-text" rows="10" maxlength="10000" placeholder="今日の出来事・気づき・明日やること"></textarea>
+        <div class="journal-footer">
+          <span id="journal-status" class="status"></span>
+          <span id="journal-count" class="count">0 / 10000</span>
+          <button type="button" id="journal-save">保存（Ctrl+S）</button>
+        </div>
+      </section>
+    </aside>
+  </main>
+</body>
+</html>

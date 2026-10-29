@@ -1,0 +1,22 @@
+[project]
+name = "todo-diary"
+version = "0.1.0"
+description = "日誌つきカレンダーTODOアプリ（Python標準ライブラリのみ）"
+requires-python = ">=3.10"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = [".aq-dlc", ".claude"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM"]
+ignore = ["S101"]  # assert in tests
+
+[tool.ruff.lint.per-file-ignores]
+"todo_app/store.py" = ["S608"]  # column names come from a fixed whitelist
+"tests/*" = ["S311"]  # random is fine for fuzzing
+
+[tool.mypy]
+files = ["todo_app"]
+strict = true
