@@ -1,0 +1,378 @@
+{
+  "run_id": "20261029-1913-todo-diary",
+  "title": "todo-diary",
+  "status": "closed",
+  "phase": "06_memory",
+  "created": "2026-10-29T19:13:23+09:00",
+  "awaiting_human": false,
+  "question": "",
+  "memory_loaded": [
+    "W-0001",
+    "W-0002"
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "critical": true,
+      "text": "TODOとして機能する: タスクの追加・一覧・編集（タイトル/メモ/期日）・完了切替・削除ができる",
+      "risks": [
+        {
+          "id": "K1",
+          "text": "作成・更新・削除の結果がDBと画面で食い違う（部分更新で他の項目が消える、存在しないIDの更新が成功扱いになる）",
+          "verifications": [
+            {
+              "id": "V1",
+              "method": "Store単体テスト: CRUD・部分更新・存在しないID",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_store.TaskStoreTests -v"
+            },
+            {
+              "id": "V2",
+              "method": "HTTP統合テスト: 作成→取得→更新→削除の一連の流れと404",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.TaskApiTests -v"
+            }
+          ]
+        },
+        {
+          "id": "K2",
+          "text": "同時リクエストでデータが欠ける・DBロックで500になる",
+          "verifications": [
+            {
+              "id": "V3",
+              "method": "20スレッド並行作成テスト",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_store.ConcurrencyTests -v"
+            }
+          ]
+        },
+        {
+          "id": "K13",
+          "text": "見えない文字だけのタイトル、行区切り・双方向制御文字の混入（レビューN1）",
+          "verifications": [
+            {
+              "id": "V17",
+              "method": "ゼロ幅文字のみ・U+2028・bidi制御の拒否、ZWJ絵文字は許可",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_validation.UnicodeEdgeTests -v"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R2",
+      "critical": true,
+      "text": "カレンダーでタスク管理: 月表示（日曜始まり6週）で日ごとの未完了/完了件数・期限切れ・日誌有無が見え、日付を選んでその日のタスクを操作できる。期限切れタスク一覧がある",
+      "risks": [
+        {
+          "id": "K3",
+          "text": "月の境界・うるう年・年跨ぎでカレンダーのマスや件数がずれる",
+          "verifications": [
+            {
+              "id": "V4",
+              "method": "月サマリーの境界値テスト（2024-02, 2026-02, 12月→1月, 日曜始まりの月）",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_store.CalendarTests -v"
+            },
+            {
+              "id": "V5",
+              "method": "/api/calendar と期限切れ一覧のHTTPテスト",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.CalendarApiTests -v"
+            }
+          ]
+        },
+        {
+          "id": "K4",
+          "text": "画面のJSが存在しない要素を参照して動かない／外部スクリプトを読む",
+          "verifications": [
+            {
+              "id": "V6",
+              "method": "index.html と app.js の静的整合チェック（参照IDの存在、外部読込なし）",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_frontend -v"
+            }
+          ]
+        },
+        {
+          "id": "K14",
+          "text": "期限切れ一覧が上限で黙って打ち切られる（レビューN6）",
+          "verifications": [
+            {
+              "id": "V18",
+              "method": "上限超過で truncated=true、古い順",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_store.TaskStoreTests.test_overdue_reports_truncation -v"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R3",
+      "critical": true,
+      "text": "毎日の日誌: 日付ごとに1件を作成・更新でき、空で保存すると削除される。未来の日付には書けない。カレンダーに日誌の有無が出る",
+      "risks": [
+        {
+          "id": "K5",
+          "text": "同じ日に日誌が重複する・更新で消える・未来日に書けてしまう・上限超過の巨大テキストが保存される",
+          "verifications": [
+            {
+              "id": "V7",
+              "method": "日誌のStoreテスト（upsert、空→削除、日付範囲）",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_store.JournalStoreTests -v"
+            },
+            {
+              "id": "V8",
+              "method": "日誌APIテスト（未来日400、上限超過400、改行保持）",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.JournalApiTests -v"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R4",
+      "critical": true,
+      "text": "バグが起きない: 不正な入力（形式違い・存在しない日付・型違い・巨大/壊れたJSON・未知の項目）でも500やデータ破損にならず、理由のわかる4xxを返す",
+      "risks": [
+        {
+          "id": "K6",
+          "text": "日付・タイトル・真偽値の検証漏れ（2026-02-30、全角数字、空白だけのタイトル、\"true\"文字列）",
+          "verifications": [
+            {
+              "id": "V9",
+              "method": "入力検証の単体テスト",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_validation -v"
+            }
+          ]
+        },
+        {
+          "id": "K7",
+          "text": "壊れた・巨大・深い入れ子のJSONやランダム入力で500や例外終了になる",
+          "verifications": [
+            {
+              "id": "V10",
+              "method": "不正リクエストとランダム入力のファズテスト（全応答が500未満）",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.RobustnessTests -v"
+            }
+          ]
+        },
+        {
+          "id": "K11",
+          "text": "UTF-8で表せない文字列（lone surrogate）が値や項目名に入り、DB書き込みやエラー応答の生成で500／切断になる（独立レビューB1）",
+          "verifications": [
+            {
+              "id": "V15",
+              "method": "サロゲートを含む title/notes/content/項目名で400とDB不変を確認、ファズ値にも追加",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.RobustnessTests tests.test_validation.UnicodeEdgeTests -v"
+            }
+          ]
+        },
+        {
+          "id": "K12",
+          "text": "OPTIONS/HEADなど未実装メソッドが501（5xx）とHTMLを返す（レビューN2）",
+          "verifications": [
+            {
+              "id": "V16",
+              "method": "HEAD/OPTIONSが405でCORS許可ヘッダーなし",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.RobustnessTests.test_head_and_options_are_405_json -v"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R5",
+      "critical": false,
+      "text": "データはSQLiteファイルに保存され、再起動後も残る",
+      "risks": [
+        {
+          "id": "K8",
+          "text": "再起動でデータが消える",
+          "verifications": [
+            {
+              "id": "V11",
+              "method": "別インスタンスで開き直して残っていることを確認",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_store.PersistenceTests -v"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R6",
+      "critical": true,
+      "text": "ローカル利用の安全性: 127.0.0.1のみで待ち受け、他サイトからの書き込み（CSRF/DNSリバインディング）を拒否し、XSSやパストラバーサルが起きない",
+      "risks": [
+        {
+          "id": "K9",
+          "text": "悪意あるWebページからlocalhostのAPIに書き込まれる（Host/Origin/Content-Type未検査）",
+          "verifications": [
+            {
+              "id": "V12",
+              "method": "不正Host・他Origin・text/plainのPOSTが拒否されるHTTPテスト",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.SecurityTests -v"
+            }
+          ]
+        },
+        {
+          "id": "K10",
+          "text": "タスク名や日誌のHTMLがそのまま描画される（XSS）・../で任意ファイルが読める",
+          "verifications": [
+            {
+              "id": "V13",
+              "method": "app.jsがinnerHTML等を使わないことの静的検査",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_frontend -v"
+            },
+            {
+              "id": "V14",
+              "method": "パストラバーサルとセキュリティヘッダーのHTTPテスト",
+              "command": ".venv\\Scripts\\python.exe -m unittest tests.test_api.StaticFileTests -v"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "review": {
+    "done": true,
+    "blocking_findings": 0,
+    "summary": "初回: blocking 1（lone surrogateで500/切断）, non-blocking 6 → 全件対処（V15-V18追加、フロントはブラウザ確認）。再レビュー: blocking 0, non-blocking 3（記録の欠落・ソース中の生の不可視文字・ハングルのフィラー）→ 全件対処。verdict pass。"
+  },
+  "memory_done": true,
+  "fix_iterations": 2,
+  "gate": {
+    "ran_at": "2026-10-29T19:57:48+09:00",
+    "finished_epoch": 1793271468.0111392,
+    "stamp": "20261029-195658",
+    "checks_pass": true,
+    "results": {
+      "checks": {
+        "lint": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.14,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-check-lint.log"
+        },
+        "typecheck": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.39,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-check-typecheck.log"
+        },
+        "test": {
+          "pass": true,
+          "exit": 0,
+          "sec": 20.85,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-check-test.log"
+        }
+      },
+      "verifications": {
+        "V1": {
+          "pass": true,
+          "exit": 0,
+          "sec": 1.31,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V1.log"
+        },
+        "V2": {
+          "pass": true,
+          "exit": 0,
+          "sec": 3.21,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V2.log"
+        },
+        "V3": {
+          "pass": true,
+          "exit": 0,
+          "sec": 2.37,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V3.log"
+        },
+        "V17": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.21,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V17.log"
+        },
+        "V4": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.42,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V4.log"
+        },
+        "V5": {
+          "pass": true,
+          "exit": 0,
+          "sec": 2.44,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V5.log"
+        },
+        "V6": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.29,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V6.log"
+        },
+        "V18": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.35,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V18.log"
+        },
+        "V7": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.41,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V7.log"
+        },
+        "V8": {
+          "pass": true,
+          "exit": 0,
+          "sec": 2.45,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V8.log"
+        },
+        "V9": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.22,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V9.log"
+        },
+        "V10": {
+          "pass": true,
+          "exit": 0,
+          "sec": 4.48,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V10.log"
+        },
+        "V15": {
+          "pass": true,
+          "exit": 0,
+          "sec": 4.47,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V15.log"
+        },
+        "V16": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.84,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V16.log"
+        },
+        "V11": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.36,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V11.log"
+        },
+        "V12": {
+          "pass": true,
+          "exit": 0,
+          "sec": 2.97,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V12.log"
+        },
+        "V13": {
+          "pass": true,
+          "exit": 0,
+          "sec": 0.29,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V13.log"
+        },
+        "V14": {
+          "pass": true,
+          "exit": 0,
+          "sec": 1.38,
+          "log": ".aq-dlc\\runs\\20261029-1913-todo-diary\\gate\\20261029-195658-verify-V14.log"
+        }
+      }
+    }
+  },
+  "stop_blocks": 0,
+  "closed_at": "2026-10-29T19:41:47+09:00"
+}
